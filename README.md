@@ -78,6 +78,10 @@ Coloca el dataset dentro de la carpeta `data/` del proyecto. El sistema soporta 
 - `data/ventas_completas.csv` — archivo descomprimido
 - `data/ventas_completas.csv.gz` — archivo comprimido (se lee directo, sin necesidad de descomprimir)
 
+> [!NOTE]
+> Aunque el enunciado teórico del laboratorio indica que las columnas del CSV están "separadas por comas", el dataset real oficial distribuido para Cruz Morada utiliza **punto y coma (`;`)** como separador de columnas. El cargador de datos (`carga.py`) ha sido ajustado a este formato real para evitar fallos de lectura.
+
+
 ---
 
 ## Ejecución del Servidor

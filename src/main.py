@@ -126,9 +126,9 @@ def obtener_utc_timestamp() -> str:
     """
     Genera un timestamp (marca de tiempo) en formato ISO 8601 con zona UTC.
     Se usa para incluir en todos los mensajes de error la hora exacta del fallo.
-    Ejemplo de salida: "2026-07-12T23:35:32.434Z"
+    Ejemplo de salida: "2026-07-12T23:35:32.434567Z"
     """
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
 
 
 # ─── MANEJADORES DE EXCEPCIONES PERSONALIZADOS ───────────────────────────────
