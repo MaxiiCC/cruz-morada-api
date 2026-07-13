@@ -197,7 +197,7 @@ def cargar_datos_parallel() -> pd.DataFrame:
         reader = pd.read_csv(
             ruta_csv,
             chunksize=chunk_size,
-            sep=',',
+            sep=';',
             encoding='latin-1',
             low_memory=False
         )
