@@ -1,0 +1,159 @@
+{
+  "descripcion": "Casos de prueba para el servicio REST de Cruz Morada — Trabajo 3. Cada objeto representa un ejemplo de solicitud y la respuesta esperada que se puede verificar manualmente o con herramientas como Postman o curl.",
+  "pruebas": [
+    {
+      "nombre": "GET sin filtros — Retorna estadísticas del dataset completo",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "GET",
+      "query_params": null,
+      "body": null,
+      "response_esperada_status": 200,
+      "nota": "Los valores exactos dependen del dataset real cargado.",
+      "response_esperada_campos": ["suma", "conteo", "promedio", "minimo", "maximo", "mediana", "desviacion_estandar"]
+    },
+    {
+      "nombre": "GET con filtro de canal POS y local 1999",
+      "url": "http://localhost:8000/v1/estadisticas/ventas?CANAL=POS&LOCAL=1999",
+      "method": "GET",
+      "query_params": {
+        "CANAL": "POS",
+        "LOCAL": "1999"
+      },
+      "body": null,
+      "response_esperada_status": 200,
+      "response_esperada_campos": ["suma", "conteo", "promedio", "minimo", "maximo", "mediana", "desviacion_estandar"]
+    },
+    {
+      "nombre": "POST válido — Filtros por GENERO, EDAD y CANAL combinados (lógica AND)",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": [
+          {"consulta": "GENERO", "valor": "Femenino"},
+          {"consulta": "EDAD", "valor": "31"},
+          {"consulta": "CANAL", "valor": "POS"}
+        ]
+      },
+      "response_esperada_status": 200,
+      "response_esperada_campos": ["suma", "conteo", "promedio", "minimo", "maximo", "mediana", "desviacion_estandar"]
+    },
+    {
+      "nombre": "POST válido — Solo filtro de CANAL WEB",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": [
+          {"consulta": "CANAL", "valor": "WEB"}
+        ]
+      },
+      "response_esperada_status": 200,
+      "response_esperada_campos": ["suma", "conteo", "promedio", "minimo", "maximo", "mediana", "desviacion_estandar"]
+    },
+    {
+      "nombre": "POST error 400 — Campo de consulta no permitido",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": [
+          {"consulta": "CAMPO_INVALIDO_TEST", "valor": "WEB"}
+        ]
+      },
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El campo de consulta 'CAMPO_INVALIDO_TEST' no está permitido. Campos válidos: CANAL, CODIGO_PRODUCTO, EDAD, FECHA_DESDE, FECHA_HASTA, GENERO, ID_PERSONA, LOCAL",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "<generado_dinamicamente>",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "POST"
+      }
+    },
+    {
+      "nombre": "POST error 400 — Valor de LOCAL no numérico",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": [
+          {"consulta": "LOCAL", "valor": "qwerqwer"}
+        ]
+      },
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El valor 'qwerqwer' no es un número de local entero y positivo válido.",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "<generado_dinamicamente>",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "POST"
+      }
+    },
+    {
+      "nombre": "POST error 400 — Lista de consultas vacía (nulo o sin elementos)",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": []
+      },
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El campo 'consultas' no puede ser nulo o estar vacío.",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "<generado_dinamicamente>",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "POST"
+      }
+    },
+    {
+      "nombre": "GET error 400 — Valor de GENERO inválido",
+      "url": "http://localhost:8000/v1/estadisticas/ventas?GENERO=Extraterrestre",
+      "method": "GET",
+      "query_params": {
+        "GENERO": "Extraterrestre"
+      },
+      "body": null,
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El valor 'Extraterrestre' no es válido para GENERO. Valores permitidos: Femenino, Masculino, No especificado, Otro",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "<generado_dinamicamente>",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "GET"
+      }
+    },
+    {
+      "nombre": "GET error 400 — Valor de CANAL inválido",
+      "url": "http://localhost:8000/v1/estadisticas/ventas?CANAL=PIRATA",
+      "method": "GET",
+      "query_params": {
+        "CANAL": "PIRATA"
+      },
+      "body": null,
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El valor 'PIRATA' no es un canal de venta válido. Canales permitidos: APR, APP, CCT, POS, WEB, WPR",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "<generado_dinamicamente>",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "GET"
+      }
+    }
+  ]
+}

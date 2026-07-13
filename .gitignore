@@ -1,0 +1,22 @@
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Variables de entorno
+.env
+
+# Archivos de datos pesados (el CSV no debe subirse a git)
+data/*
+!data/.gitkeep
+
+# IDEs
+.vscode/
+.idea/

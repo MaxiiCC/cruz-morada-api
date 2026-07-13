@@ -1,0 +1,122 @@
+{
+  "pruebas": [
+    {
+      "nombre": "Request GET sin filtros (Dataset completo)",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "GET",
+      "body": null,
+      "response_esperada_status": 200,
+      "response_esperada_body_ejemplo": {
+        "suma": 33012500000.0,
+        "conteo": 3242878,
+        "promedio": 10179.98,
+        "minimo": 100.0,
+        "maximo": 220000.0,
+        "mediana": 7662.0,
+        "desviacion_estandar": 14466.12
+      }
+    },
+    {
+      "nombre": "Request GET con filtros (Canal POS y Local 1999)",
+      "url": "http://localhost:8000/v1/estadisticas/ventas?CANAL=POS&LOCAL=1999",
+      "method": "GET",
+      "body": null,
+      "response_esperada_status": 200,
+      "response_esperada_body_ejemplo": {
+        "suma": 125000.0,
+        "conteo": 10,
+        "promedio": 12500.0,
+        "minimo": 5000.0,
+        "maximo": 30000.0,
+        "mediana": 12000.0,
+        "desviacion_estandar": 7500.0
+      }
+    },
+    {
+      "nombre": "Request POST válido con múltiples filtros",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": [
+          {"consulta": "GENERO", "valor": "Femenino"},
+          {"consulta": "EDAD", "valor": "31"},
+          {"consulta": "CANAL", "valor": "POS"}
+        ]
+      },
+      "response_esperada_status": 200,
+      "response_esperada_body_ejemplo": {
+        "suma": 1500.5,
+        "conteo": 42,
+        "promedio": 35.73,
+        "minimo": 10.0,
+        "maximo": 100.0,
+        "mediana": 30.0,
+        "desviacion_estandar": 25.4
+      }
+    },
+    {
+      "nombre": "Request POST con error 400 (Filtro inválido / no permitido)",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": [
+          {"consulta": "CAMPO_INVALIDO_TEST", "valor": "WEB"}
+        ]
+      },
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El campo de consulta 'CAMPO_INVALIDO_TEST' no está permitido. Campos válidos: CANAL, CODIGO_PRODUCTO, EDAD, FECHA_DESDE, FECHA_HASTA, GENERO, ID_PERSONA, LOCAL",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "2026-06-30T20:44:49.201Z",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "POST"
+      }
+    },
+    {
+      "nombre": "Request POST con error 400 (Valor de local no numérico)",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": [
+          {"consulta": "LOCAL", "valor": "qwerqwer"}
+        ]
+      },
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El valor 'qwerqwer' no es un número de local entero y positivo válido.",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "2026-06-30T20:44:49.201Z",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "POST"
+      }
+    },
+    {
+      "nombre": "Request POST con error 400 (Lista de consultas vacía)",
+      "url": "http://localhost:8000/v1/estadisticas/ventas",
+      "method": "POST",
+      "body": {
+        "consultas": []
+      },
+      "response_esperada_status": 400,
+      "response_esperada_body": {
+        "detail": "El campo 'consultas' no puede ser nulo o estar vacío.",
+        "instance": "/v1/estadisticas/ventas",
+        "status": 400,
+        "title": "Bad Request",
+        "type": "https://developer.mozilla.org/es/docs/Web/HTTP/Reference/Status/400",
+        "timestamp": "2026-06-30T20:44:49.201Z",
+        "errorCode": "VF",
+        "errorLabel": "Validación Fallida",
+        "method": "POST"
+      }
+    }
+  ]
+}
