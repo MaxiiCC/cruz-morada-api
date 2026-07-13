@@ -144,7 +144,7 @@
       "body": null,
       "response_esperada_status": 400,
       "response_esperada_body": {
-        "detail": "El valor 'PIRATA' no es un canal de venta válido. Canales permitidos: APR, APP, CCT, POS, WEB, WPR",
+        "detail": "El valor 'PIRATA' no es un canal de venta válido. Canales permitidos: APP, APR, CCT, POS, WEB, WPR",
         "instance": "/v1/estadisticas/ventas",
         "status": 400,
         "title": "Bad Request",

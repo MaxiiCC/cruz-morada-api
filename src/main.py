@@ -30,7 +30,8 @@ from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError, HTTPException
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from src.routes import router
 from src.carga import cargar_datos_parallel
@@ -193,12 +194,20 @@ async def request_validation_error_handler(request: Request, exc: RequestValidat
     )
 
 
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """
-    Maneja los errores HTTP estándar que lanza FastAPI internamente
-    (ej: 404 Not Found cuando se accede a una ruta que no existe, 405 Method Not Allowed, etc.)
-    Los convierte al mismo formato de la rúbrica.
+    Maneja los errores HTTP estándar, tanto los que lanza FastAPI internamente
+    (ej: 405 Method Not Allowed) como los que lanza el enrutador de Starlette
+    cuando una ruta no existe (404 Not Found).
+
+    NOTA IMPORTANTE: se registra sobre StarletteHTTPException (la clase base)
+    y no sobre fastapi.exceptions.HTTPException (la subclase), porque el
+    enrutador interno de Starlette lanza la excepción base directamente
+    cuando una ruta no existe, y ese caso no dispararía un handler registrado
+    solo sobre la subclase de FastAPI. Al registrar sobre la clase base,
+    capturamos AMBOS casos con el mismo manejador (las HTTPException de
+    FastAPI también matchean por herencia).
     """
     # Determinamos el título y código según el tipo de error HTTP.
     title = exc.detail

@@ -243,3 +243,145 @@ def test_post_error_campo_invalido():
     data = response.json()
     assert data["errorCode"] == "VF"
     assert "CAMPO_INVALIDO" in data["detail"]
+
+# ─── PRUEBA 8: GET con filtro de CODIGO_PRODUCTO ──────────────────────────────
+def test_get_con_filtro_codigo_producto():
+    """
+    CODIGO_PRODUCTO=1095 aparece en 2 filas del mock (montos 10000 y 30000).
+    """
+    response = client.get("/v1/estadisticas/ventas?CODIGO_PRODUCTO=1095")
+    assert response.status_code == 200
+    data = response.json()
+ 
+    assert data["suma"] == 40000.0
+    assert data["conteo"] == 2
+    assert data["promedio"] == 20000.0
+    assert data["minimo"] == 10000.0
+    assert data["maximo"] == 30000.0
+ 
+ 
+# ─── PRUEBA 9: GET con filtro de ID_PERSONA ───────────────────────────────────
+def test_get_con_filtro_id_persona():
+    """
+    Filtra por un UUID específico; debe devolver exactamente 1 fila (monto 20000).
+    """
+    response = client.get(
+        "/v1/estadisticas/ventas?ID_PERSONA=550e8400-e29b-41d4-a716-446655440001"
+    )
+    assert response.status_code == 200
+    data = response.json()
+ 
+    assert data["conteo"] == 1
+    assert data["suma"] == 20000.0
+    assert data["desviacion_estandar"] == 0.0  # con 1 solo valor, dispersión = 0
+ 
+ 
+# ─── PRUEBA 10: GET con rango FECHA_DESDE / FECHA_HASTA ───────────────────────
+def test_get_con_filtro_rango_fechas():
+    """
+    Filtra ventas entre 2026-05-09 y 2026-05-10 (inclusive).
+    Deben quedar las filas con montos 20000 (09 may) y 30000 (10 may).
+    """
+    response = client.get(
+        "/v1/estadisticas/ventas?FECHA_DESDE=2026-05-09&FECHA_HASTA=2026-05-10T23:59:59"
+    )
+    assert response.status_code == 200
+    data = response.json()
+ 
+    assert data["conteo"] == 2
+    assert data["suma"] == 50000.0
+    assert data["minimo"] == 20000.0
+    assert data["maximo"] == 30000.0
+ 
+ 
+# ─── PRUEBA 11: Consulta que no encuentra ninguna fila ────────────────────────
+def test_get_sin_resultados_devuelve_ceros():
+    """
+    Un filtro válido pero que no matchea ninguna fila (LOCAL inexistente)
+    no debe lanzar error: debe devolver 200 con todas las métricas en 0.
+    """
+    response = client.get("/v1/estadisticas/ventas?LOCAL=99999")
+    assert response.status_code == 200
+    data = response.json()
+ 
+    assert data["suma"] == 0.0
+    assert data["conteo"] == 0
+    assert data["promedio"] == 0.0
+    assert data["minimo"] == 0.0
+    assert data["maximo"] == 0.0
+    assert data["mediana"] == 0.0
+    assert data["desviacion_estandar"] == 0.0
+ 
+ 
+# ─── PRUEBA 12: POST con GENERO inválido (400) ────────────────────────────────
+def test_post_error_genero_invalido():
+    """
+    El mismo caso de la prueba 8 del enunciado original (GENERO inválido)
+    pero probado por la vía POST en vez de GET, ya que la validación se
+    comparte pero el 'method' reportado en el error debe ser distinto.
+    """
+    payload = {
+        "consultas": [
+            {"consulta": "GENERO", "valor": "Extraterrestre"}
+        ]
+    }
+    response = client.post("/v1/estadisticas/ventas", json=payload)
+    assert response.status_code == 400
+    data = response.json()
+ 
+    assert data["errorCode"] == "VF"
+    assert "Extraterrestre" in data["detail"]
+    assert data["method"] == "POST"
+ 
+ 
+# ─── PRUEBA 13: POST con CANAL inválido (400) ─────────────────────────────────
+def test_post_error_canal_invalido():
+    payload = {
+        "consultas": [
+            {"consulta": "CANAL", "valor": "PIRATA"}
+        ]
+    }
+    response = client.post("/v1/estadisticas/ventas", json=payload)
+    assert response.status_code == 400
+    data = response.json()
+ 
+    assert data["errorCode"] == "VF"
+    assert "PIRATA" in data["detail"]
+ 
+ 
+# ─── PRUEBA 14: Formato de error 500 ───────────────────────────────────────────
+def test_get_error_interno_formato_500(monkeypatch):
+    """
+    Fuerza un error 500 rompiendo intencionalmente el motor de estadísticas,
+    para verificar que el formato de error interno cumple exactamente con
+    la rúbrica (errorCode 'IE', title 'Internal Server Error', etc.)
+    """
+    import src.routes as routes_module
+ 
+    def calcular_estadisticas_roto(df):
+        raise RuntimeError("fallo simulado para probar error 500")
+ 
+    monkeypatch.setattr(routes_module, "calcular_estadisticas", calcular_estadisticas_roto)
+ 
+    response = client.get("/v1/estadisticas/ventas")
+    assert response.status_code == 500
+    data = response.json()
+ 
+    assert data["status"] == 500
+    assert data["title"] == "Internal Server Error"
+    assert data["errorCode"] == "IE"
+    assert data["errorLabel"] == "Error Interno"
+    assert data["method"] == "GET"
+    assert "instance" in data and data["instance"] == "/v1/estadisticas/ventas"
+    assert "timestamp" in data
+ 
+ 
+# ─── PRUEBA 15: Ruta inexistente → 404 con formato de la rúbrica ──────────────
+def test_ruta_inexistente_404():
+    response = client.get("/v1/ruta/que/no/existe")
+    assert response.status_code == 404
+    data = response.json()
+ 
+    assert data["status"] == 404
+    assert data["errorCode"] == "RNF"
+    assert data["title"] == "Not Found"
