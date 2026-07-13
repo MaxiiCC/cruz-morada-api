@@ -157,9 +157,24 @@ def cargar_datos_parallel() -> pd.DataFrame:
     """
     # Verificamos que el archivo exista antes de intentar abrirlo.
     ruta_csv = Path(CPYD_CSV_PATH)
-    if not ruta_csv.exists():
-        logger.error(f"Archivo CSV no encontrado en la ruta configurada: {ruta_csv.absolute()}")
-        raise FileNotFoundError(f"No se encontró el archivo CSV en: {ruta_csv.absolute()}")
+    
+    # ── Detección automática del archivo (soporta .csv y .csv.gz) ───────────────
+    # Si el usuario descargó el archivo comprimido (.gz), no necesita descomprimirlo.
+    # Pandas soporta leer archivos gzip directamente y de forma transparente.
+    # La lógica es: primero buscamos el .csv exacto configurado. Si no existe,
+    # buscamos automáticamente la versión .gz en la misma carpeta.
+    ruta_gz = Path(str(ruta_csv) + ".gz")
+
+    if not ruta_csv.exists() and ruta_gz.exists():
+        # Se encontró la versión comprimida. La usamos directamente.
+        logger.info(f"Archivo .csv no encontrado, usando versión comprimida: {ruta_gz.name}")
+        ruta_csv = ruta_gz
+    elif not ruta_csv.exists():
+        logger.error(f"Archivo CSV no encontrado en: {ruta_csv.absolute()}")
+        raise FileNotFoundError(
+            f"No se encontró el archivo de datos. Coloca 'ventas_completas.csv' "
+            f"o 'ventas_completas.csv.gz' en la carpeta data/"
+        )
 
     logger.info(f"Iniciando carga paralela de: {ruta_csv.name}")
 

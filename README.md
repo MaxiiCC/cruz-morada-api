@@ -74,7 +74,9 @@ El archivo `.env` contiene:
 - `CPYD_CSV_PATH`: Ruta al archivo CSV. Por defecto es `data/ventas_completas.csv`.
 
 ### 4. Colocar el archivo de datos
-Coloca el dataset `ventas_completas.csv` dentro de la carpeta `data/` del proyecto.
+Coloca el dataset dentro de la carpeta `data/` del proyecto. El sistema soporta ambos formatos:
+- `data/ventas_completas.csv` — archivo descomprimido
+- `data/ventas_completas.csv.gz` — archivo comprimido (se lee directo, sin necesidad de descomprimir)
 
 ---
 
