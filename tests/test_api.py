@@ -385,3 +385,28 @@ def test_ruta_inexistente_404():
     assert data["status"] == 404
     assert data["errorCode"] == "RNF"
     assert data["title"] == "Not Found"
+
+# ─── PRUEBA 16: GET con FECHA_HASTA sin componente horario ────────────────────
+def test_get_filtro_fecha_hasta_sin_hora_incluye_dia_completo():
+    """
+    Verifica la corrección de un bug de límite de rango de fechas.
+
+    Nota: este test es complementario a la PRUEBA 10 (test_get_con_filtro_rango_fechas),
+    que ya pasaba porque usaba explícitamente "T23:59:59" en FECHA_HASTA como
+    workaround. Esta prueba cubre específicamente el caso SIN hora, que es el
+    formato más natural y esperado por un usuario de la API (ej: "dame las
+    ventas hasta el 10 de mayo" sin tener que saber que debe agregar la hora).
+    """
+    response = client.get(
+        "/v1/estadisticas/ventas?FECHA_DESDE=2026-05-09&FECHA_HASTA=2026-05-10"
+    )
+    assert response.status_code == 200
+    data = response.json()
+
+    # Antes del fix: conteo == 1 (solo la venta del día 09, la del día 10
+    # a las 15:30 quedaba fuera del filtro por el bug de medianoche).
+    # Después del fix: conteo == 2 (se incluye el día 10 completo).
+    assert data["conteo"] == 2
+    assert data["suma"] == 50000.0
+    assert data["minimo"] == 20000.0
+    assert data["maximo"] == 30000.0    

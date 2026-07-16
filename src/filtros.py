@@ -102,9 +102,21 @@ def aplicar_filtros(df: pd.DataFrame, filtros: Dict[str, Any]) -> pd.DataFrame:
         elif campo_norm == "FECHA_HASTA":
             # Retiene solo las filas donde la fecha de la transacción sea
             # menor o igual a la fecha indicada por el usuario.
-            # Ej: FECHA_HASTA = "2024-12-31" → solo ventas hasta el 31 de diciembre de 2024.
+            #
+            # IMPORTANTE: si el usuario envía solo la fecha sin hora
+            # (ej: "2024-12-31"), pandas la interpreta como el instante
+            # 2024-12-31T00:00:00, lo que excluiría TODAS las ventas de ese
+            # mismo día. Para que "hasta el 31 de diciembre" incluya el día
+            # completo, si no viene un componente horario explícito lo
+            # extendemos hasta el último instante del día (23:59:59.999999).
             fecha_lim = pd.to_datetime(valor, errors="coerce")
             if not pd.isna(fecha_lim):
+                valor_str = str(valor).strip()
+                tiene_hora = "T" in valor_str or " " in valor_str
+                if not tiene_hora:
+                    fecha_lim = fecha_lim + pd.Timedelta(
+                        hours=23, minutes=59, seconds=59, microseconds=999999
+                    )
                 filtered_df = filtered_df[filtered_df["FECHA"] <= fecha_lim]
 
         else:
