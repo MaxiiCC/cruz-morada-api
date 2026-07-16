@@ -60,9 +60,18 @@ def procesar_un_chunk(chunk_df: pd.DataFrame) -> pd.DataFrame:
     # ── Paso 2: Limpiar comillas dobles de los valores de texto ─────────────────
     # Los valores del CSV también vienen con comillas (ej: "POS", "3198").
     # Aquí las removemos de todas las columnas de texto para poder operar con los datos.
+    # IMPORTANTE: primero reemplazamos las comillas en los valores que NO son nulos.
+    # Si convirtiéramos directamente con astype(str), los valores nulos (NaN) se
+    # convertirían al texto literal "nan" en lugar de permanecer como valores vacíos.
     for col in chunk_df.columns:
         if chunk_df[col].dtype == object:
-            chunk_df[col] = chunk_df[col].astype(str).str.replace('"', '', regex=False).str.strip()
+            mask_no_nulo = chunk_df[col].notna()
+            chunk_df.loc[mask_no_nulo, col] = (
+                chunk_df.loc[mask_no_nulo, col]
+                .astype(str)
+                .str.replace('"', '', regex=False)
+                .str.strip()
+            )
 
     # ── Paso 3: Convertir columnas numéricas clave antes de filtrar ─────────────
     # Necesitamos que MONTO_APLICADO y UNIDADES sean números para poder filtrar
@@ -190,14 +199,30 @@ def cargar_datos_parallel() -> pd.DataFrame:
     logger.info(f"Usando {max_workers} procesos en paralelo para la carga y limpieza de datos.")
 
     # Abrimos el archivo CSV dividiéndolo en trozos y procesamos en paralelo.
-    # El CSV de Cruz Morada usa coma (,) como separador de columnas según el enunciado,
-    # y la codificación latin-1 para soportar caracteres del español (ñ, á, é, etc.).
+    # AUTODETECCIÓN DEL SEPARADOR: el enunciado dice "comas" pero el dataset real
+    # puede venir con punto y coma (;). En lugar de asumir un separador fijo,
+    # leemos solo la primera línea y usamos csv.Sniffer para detectar el delimitador
+    # real automáticamente. Así el código funciona con ambas versiones del CSV.
+    import csv, gzip as gzip_mod, io
+    try:
+        if str(ruta_csv).endswith('.gz'):
+            with gzip_mod.open(ruta_csv, 'rt', encoding='latin-1') as f_sniff:
+                primera_linea = f_sniff.readline()
+        else:
+            with open(ruta_csv, 'r', encoding='latin-1') as f_sniff:
+                primera_linea = f_sniff.readline()
+        separador_detectado = csv.Sniffer().sniff(primera_linea, delimiters=',;|\t').delimiter
+        logger.info(f"Separador CSV detectado automáticamente: '{separador_detectado}'")
+    except Exception:
+        separador_detectado = ';'
+        logger.warning("No se pudo detectar el separador; se usará ';' por defecto.")
+
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         reader = pd.read_csv(
             ruta_csv,
             chunksize=chunk_size,
-            sep=';',
+            sep=separador_detectado,
             encoding='latin-1',
             low_memory=False
         )

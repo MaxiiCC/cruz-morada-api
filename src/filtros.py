@@ -43,9 +43,12 @@ def aplicar_filtros(df: pd.DataFrame, filtros: Dict[str, Any]) -> pd.DataFrame:
     if df is None or len(df) == 0:
         return df
 
-    # Comenzamos con una copia del DataFrame completo.
-    # A medida que aplicamos cada filtro, este DataFrame irá reduciéndose.
-    filtered_df = df.copy()
+    # Apuntamos directamente al DataFrame recibido sin copiarlo.
+    # Las operaciones de filtrado de Pandas (ej: df[df['col']==valor]) ya
+    # devuelven nuevos subconjuntos sin modificar el DataFrame original en memoria,
+    # por lo que hacer .copy() previo duplicaría las 3.2M de filas innecesariamente
+    # en CADA petición HTTP, degradando el rendimiento del servidor.
+    filtered_df = df
 
     # Recorremos cada par (campo, valor) del diccionario de filtros.
     for campo, valor in filtros.items():

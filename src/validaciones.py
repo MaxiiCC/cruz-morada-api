@@ -119,7 +119,12 @@ def validar_y_mapear_filtros(filtros_raw: Dict[str, Any]) -> Dict[str, Any]:
 
         elif campo_norm == "EDAD":
             # EDAD debe ser un número entero entre 0 y 120 años.
+            # Rechazamos explícitamente valores float no enteros (ej: 31.7)
+            # porque int(31.7) los trunca silenciosamente a 31 sin arrojar error,
+            # lo que causaría comportamiento inconsistente entre GET y POST.
             try:
+                if isinstance(value, float) and not value.is_integer():
+                    raise ValueError()
                 val_int = int(value)
                 if val_int < 0 or val_int > 120:
                     raise ValueError()
@@ -130,10 +135,13 @@ def validar_y_mapear_filtros(filtros_raw: Dict[str, Any]) -> Dict[str, Any]:
                 )
 
         elif campo_norm == "LOCAL":
-            # LOCAL debe ser un número entero positivo (el identificador del local).
+            # LOCAL debe ser un número entero estrictamente positivo (mayor a 0).
+            # Rechazamos floats no enteros para consistencia entre GET y POST.
             try:
+                if isinstance(value, float) and not value.is_integer():
+                    raise ValueError()
                 val_int = int(value)
-                if val_int < 0:
+                if val_int <= 0:
                     raise ValueError()
                 filtros_validos["LOCAL"] = val_int
             except (ValueError, TypeError):
@@ -142,10 +150,13 @@ def validar_y_mapear_filtros(filtros_raw: Dict[str, Any]) -> Dict[str, Any]:
                 )
 
         elif campo_norm == "CODIGO_PRODUCTO":
-            # CODIGO_PRODUCTO (SKU) debe ser un número entero positivo.
+            # CODIGO_PRODUCTO (SKU) debe ser un número entero estrictamente positivo (mayor a 0).
+            # Rechazamos floats no enteros para consistencia entre GET y POST.
             try:
+                if isinstance(value, float) and not value.is_integer():
+                    raise ValueError()
                 val_int = int(value)
-                if val_int < 0:
+                if val_int <= 0:
                     raise ValueError()
                 filtros_validos["CODIGO_PRODUCTO"] = val_int
             except (ValueError, TypeError):
