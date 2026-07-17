@@ -65,7 +65,7 @@ app.include_router(router)
 
 # Helper para obtener timestamp en formato ISO 8601 UTC
 def obtener_utc_timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "000Z"
 
 
 # Handlers para errores personalizados según la pauta del trabajo

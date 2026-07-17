@@ -105,6 +105,14 @@ def test_get_error_tipo_invalido():
     assert "qwerty" in data["detail"]
     assert data["method"] == "GET"
 
+# Test de error 400 si el GET tiene un campo de consulta invalido
+def test_get_error_campo_invalido():
+    response = client.get("/v1/estadisticas/ventas?CAMPO_ERRONEO=1")
+    assert response.status_code == 400
+    data = response.json()
+    assert data["errorCode"] == "VF"
+    assert "CAMPO_ERRONEO" in data["detail"]
+
 # Test de error 400 si el POST viene vacio
 def test_post_sin_filtros_error():
     response = client.post("/v1/estadisticas/ventas", json={"consultas": []})
@@ -181,6 +189,19 @@ def test_get_con_filtro_rango_fechas():
 def test_get_con_filtro_fechas_tz_aware():
     response = client.get(
         "/v1/estadisticas/ventas?FECHA_DESDE=2026-05-09T00:00:00Z&FECHA_HASTA=2026-05-10T23:59:59-04:00"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["conteo"] == 2
+    assert data["suma"] == 50000.0
+
+# Test de GET con timezone que comprueba el desplazamiento correcto de horas (evita descalce de zona horaria)
+def test_get_con_filtro_fechas_tz_aware_desplazamiento():
+    # 2026-05-09T14:00:00Z (UTC) equivale a las 10:00:00 (Chile, UTC-4).
+    # Debe incluir la fila 1 (2026-05-09 12:00:00) y fila 2 (2026-05-10 15:30:22) -> Conteo: 2.
+    # Si solo borrara la etiqueta sin convertir, se compararía contra las 14:00:00 local y excluiría la fila 1 -> Conteo: 1.
+    response = client.get(
+        "/v1/estadisticas/ventas?FECHA_DESDE=2026-05-09T14:00:00Z&FECHA_HASTA=2026-05-10T23:59:59-04:00"
     )
     assert response.status_code == 200
     data = response.json()

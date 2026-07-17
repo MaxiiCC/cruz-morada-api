@@ -23,4 +23,3 @@ data/*
 
 # Archivos de salida de pruebas manuales
 salida*.json
-test_manual_completo.ps1

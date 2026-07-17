@@ -32,6 +32,18 @@ def get_estadisticas(
     fecha_desde: Optional[str] = Query(None, alias="FECHA_DESDE", description="Rango de fecha de compra (inicio)"),
     fecha_hasta: Optional[str] = Query(None, alias="FECHA_HASTA", description="Rango de fecha de compra (término)")
 ):
+    # Validamos que no vengan query params no permitidos en la URL (GET)
+    CAMPOS_PERMITIDOS = {
+        "GENERO", "EDAD", "CANAL", "CODIGO_PRODUCTO",
+        "ID_PERSONA", "LOCAL", "FECHA_DESDE", "FECHA_HASTA"
+    }
+    for param_name in request.query_params.keys():
+        if param_name.strip().upper() not in CAMPOS_PERMITIDOS:
+            raise APIValidationError(
+                f"El campo de consulta '{param_name}' no está permitido. "
+                f"Campos válidos: {', '.join(sorted(CAMPOS_PERMITIDOS))}"
+            )
+
     # Recolectamos los parametros en un dict
     filtros_raw = {
         "GENERO": genero,

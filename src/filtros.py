@@ -1,8 +1,10 @@
 import pandas as pd
 import logging
 from typing import Dict, Any
+from datetime import timezone, timedelta
 
 logger = logging.getLogger("cruz_morada_api")
+CHILE_UTC4 = timezone(timedelta(hours=-4))
 
 
 def aplicar_filtros(df: pd.DataFrame, filtros: Dict[str, Any]) -> pd.DataFrame:
@@ -49,7 +51,7 @@ def aplicar_filtros(df: pd.DataFrame, filtros: Dict[str, Any]) -> pd.DataFrame:
             fecha_lim = pd.to_datetime(valor, errors="coerce")
             if not pd.isna(fecha_lim):
                 if fecha_lim.tzinfo is not None:
-                    fecha_lim = fecha_lim.tz_localize(None)
+                    fecha_lim = fecha_lim.tz_convert(CHILE_UTC4).tz_localize(None)
                 filtered_df = filtered_df[filtered_df["FECHA"] >= fecha_lim]
 
         # Filtro de fecha limite
@@ -57,7 +59,7 @@ def aplicar_filtros(df: pd.DataFrame, filtros: Dict[str, Any]) -> pd.DataFrame:
             fecha_lim = pd.to_datetime(valor, errors="coerce")
             if not pd.isna(fecha_lim):
                 if fecha_lim.tzinfo is not None:
-                    fecha_lim = fecha_lim.tz_localize(None)
+                    fecha_lim = fecha_lim.tz_convert(CHILE_UTC4).tz_localize(None)
                 valor_str = str(valor).strip()
                 # Si viene sin hora, sumamos todo el dia completo para incluir las ventas de esa fecha
                 tiene_hora = "T" in valor_str or " " in valor_str
