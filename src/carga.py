@@ -82,7 +82,7 @@ def procesar_un_chunk(chunk_df: pd.DataFrame) -> pd.DataFrame:
     # Copia el subset final y asegura tipos
     final_df = chunk_df[columnas_finales].copy()
     final_df["FECHA"] = pd.to_datetime(final_df["FECHA"], errors="coerce")
-    final_df["CANAL"] = final_df["CANAL"].astype(str).str.strip().str.upper()
+    final_df["CANAL"] = final_df["CANAL"].fillna("").astype(str).str.strip().str.upper()
     final_df["LOCAL"] = pd.to_numeric(final_df["LOCAL"], errors="coerce").fillna(-1).astype(int)
     final_df["CODIGO_PRODUCTO"] = pd.to_numeric(final_df["CODIGO_PRODUCTO"], errors="coerce").fillna(-1).astype(int)
     final_df["MONTO_APLICADO"] = pd.to_numeric(final_df["MONTO_APLICADO"], errors="coerce").fillna(0.0).astype(float)
@@ -141,12 +141,16 @@ def cargar_datos_parallel() -> pd.DataFrame:
             if (i + 1) % 10 == 0:
                 logger.info(f"Leidos {i + 1} chunks ({(i + 1) * chunk_size:,} filas)...")
 
-        for future in futures:
-            chunks_procesados.append(future.result())
+        for i, future in enumerate(futures):
+            try:
+                chunks_procesados.append(future.result())
+            except Exception as e:
+                logger.error(f"Error al procesar el bloque (chunk) {i}: {str(e)}", exc_info=True)
 
     if not chunks_procesados:
         raise ValueError("El archivo CSV no contiene registros procesables.")
 
     df_completo = pd.concat(chunks_procesados, ignore_index=True)
+    del chunks_procesados
     logger.info(f"Carga completa. Total filas cargadas: {len(df_completo):,}")
     return df_completo

@@ -177,6 +177,16 @@ def test_get_con_filtro_rango_fechas():
     assert data["minimo"] == 20000.0
     assert data["maximo"] == 30000.0
 
+# Test de GET con rango de fechas con zona horaria (tz-aware)
+def test_get_con_filtro_fechas_tz_aware():
+    response = client.get(
+        "/v1/estadisticas/ventas?FECHA_DESDE=2026-05-09T00:00:00Z&FECHA_HASTA=2026-05-10T23:59:59-04:00"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["conteo"] == 2
+    assert data["suma"] == 50000.0
+
 # Test de retorno de ceros si el filtro no encuentra filas
 def test_get_sin_resultados_devuelve_ceros():
     response = client.get("/v1/estadisticas/ventas?LOCAL=99999")

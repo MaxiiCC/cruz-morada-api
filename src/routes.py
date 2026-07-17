@@ -67,7 +67,7 @@ def get_estadisticas(
         logger.error(f"Error al calcular estadísticas en GET: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error interno al calcular estadísticas: {str(e)}"
+            detail="Error interno al calcular estadísticas."
         )
 
 
@@ -83,7 +83,7 @@ def get_estadisticas(
     description="Devuelve estadísticas de ventas calculadas sobre MONTO APLICADO con base en un listado de filtros dinámicos."
 )
 def post_estadisticas(request: Request, payload: ConsultaRequest):
-    if not payload or not payload.consultas or len(payload.consultas) == 0:
+    if not payload.consultas or len(payload.consultas) == 0:
         raise APIValidationError("El campo 'consultas' no puede ser nulo o estar vacío.")
 
     # Mapea el body JSON de consultas a un diccionario plano
@@ -113,5 +113,5 @@ def post_estadisticas(request: Request, payload: ConsultaRequest):
         logger.error(f"Error al calcular estadísticas en POST: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error interno al calcular estadísticas: {str(e)}"
+            detail="Error interno al calcular estadísticas."
         )

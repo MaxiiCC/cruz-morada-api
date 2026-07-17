@@ -166,7 +166,7 @@ async def catch_all_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            "detail": f"Error interno al calcular estadísticas: {str(exc)}",
+            "detail": "Error interno al calcular estadísticas.",
             "instance": request.url.path,
             "status": 500,
             "title": "Internal Server Error",

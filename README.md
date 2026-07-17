@@ -89,8 +89,14 @@ Coloca el dataset dentro de la carpeta `data/` del proyecto. El sistema soporta 
 
 Levanta la API usando `uvicorn` desde la raíz del proyecto:
 
+**En Linux / macOS:**
 ```bash
 python3 -m uvicorn src.main:app --reload --port 8000
+```
+
+**En Windows (PowerShell):**
+```powershell
+python -m uvicorn src.main:app --reload --port 8000
 ```
 
 Al iniciar, el servidor ejecutará la carga paralela desatendida del CSV. Verás en el log el progreso y la cantidad de filas cargadas en memoria.
@@ -143,12 +149,25 @@ curl -X POST http://localhost:8000/v1/estadisticas/ventas \
 
 ---
 
-## Pruebas Unitarias
+## Pruebas y Validación
 
-Para ejecutar la suite de pruebas unitarias sobre los controladores y el motor de estadísticas:
+### 1. Pruebas Unitarias Automatizadas (con Pytest)
+Para ejecutar la suite de 19 pruebas unitarias automatizadas sobre los controladores y el motor de estadísticas:
 
+**En Linux / macOS:**
 ```bash
 pytest -v
+```
+
+**En Windows (PowerShell):**
+```powershell
+python -m pytest -v
+```
+
+### 2. Pruebas Funcionales en Vivo (PowerShell - Solo Windows)
+Si el servidor de la API está encendido, puedes ejecutar la suite completa de 36 pruebas de integración y validación en vivo corriendo:
+```powershell
+.\test_manual_completo.ps1
 ```
 
 ---
