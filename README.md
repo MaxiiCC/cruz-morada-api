@@ -17,11 +17,12 @@ cruz-morada-api/
 │   ├── carga.py         # Carga paralela y preprocesamiento de datos por chunks
 │   ├── estadisticas.py  # Fórmulas de cálculo estadístico (mediana par, std poblacional, etc.)
 │   ├── filtros.py       # Aplicación de filtros lógicos AND al DataFrame en memoria
+│   ├── routes.py       # Definición de endpoints GET y POST con sus controladores
 │   ├── validaciones.py  # Reglas de validación de campos y control de tipos
 │   └── modelos.py       # Esquemas de datos Pydantic para entrada/salida y documentación
 ├── tests/
-│   ├── test_api.py      # Pruebas unitarias de endpoints y validadores
-│   └── datos.json       # Casos de prueba y payloads de ejemplo exigidos
+│   └── test_api.py      # Pruebas unitarias de endpoints y validadores
+├── datos.json             # Casos de prueba y payloads de ejemplo exigidos
 ├── data/                # Carpeta para colocar ventas_completas.csv
 ├── .env.example
 ├── .gitignore
