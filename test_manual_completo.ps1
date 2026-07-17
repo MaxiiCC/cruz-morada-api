@@ -51,6 +51,7 @@ Test-Caso "Filtro FECHA_DESDE=2023-01-01" 200 -url "$BASE`?FECHA_DESDE=2023-01-0
 Test-Caso "Filtro FECHA_HASTA=2024-12-31" 200 -url "$BASE`?FECHA_HASTA=2024-12-31"
 Test-Caso "Rango de fechas sin hora (bug fix)" 200 -url "$BASE`?FECHA_DESDE=2023-11-01&FECHA_HASTA=2023-11-30"
 Test-Caso "Filtro fechas con zona horaria (tz-aware)" 200 -url "$BASE`?FECHA_DESDE=2023-11-01T00:00:00Z&FECHA_HASTA=2023-11-30T23:59:59-04:00"
+Test-Caso "Filtros en minuscula (genero y canal)"   200 -url "$BASE`?genero=Femenino&canal=POS"
 
 Write-Host "`n[GET] Valores en los bordes de rango" -ForegroundColor Yellow
 Test-Caso "EDAD=0 (limite inferior valido)"   200 -url "$BASE`?EDAD=0"

@@ -306,3 +306,13 @@ def test_post_error_edad_booleano():
     data = response.json()
     assert data["errorCode"] == "VF"
     assert "true" in data["detail"].lower()
+
+# Test de GET con query params en minúsculas (valida la insensibilidad a mayúsculas/minúsculas)
+def test_get_con_filtros_lowercase():
+    # Consultamos con "genero" y "canal" en minúscula.
+    # Debe coincidir solo con la fila 3 (Femenino, POS) -> Conteo 1, Suma 40000.0.
+    response = client.get("/v1/estadisticas/ventas?genero=Femenino&canal=POS")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["conteo"] == 1
+    assert data["suma"] == 40000.0

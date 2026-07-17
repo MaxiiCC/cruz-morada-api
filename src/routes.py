@@ -32,29 +32,27 @@ def get_estadisticas(
     fecha_desde: Optional[str] = Query(None, alias="FECHA_DESDE", description="Rango de fecha de compra (inicio)"),
     fecha_hasta: Optional[str] = Query(None, alias="FECHA_HASTA", description="Rango de fecha de compra (término)")
 ):
-    # Validamos que no vengan query params no permitidos en la URL (GET)
-    CAMPOS_PERMITIDOS = {
-        "GENERO", "EDAD", "CANAL", "CODIGO_PRODUCTO",
-        "ID_PERSONA", "LOCAL", "FECHA_DESDE", "FECHA_HASTA"
+    # Inicializamos todos los filtros permitidos en None
+    filtros_raw = {
+        "GENERO": None,
+        "EDAD": None,
+        "CANAL": None,
+        "CODIGO_PRODUCTO": None,
+        "ID_PERSONA": None,
+        "LOCAL": None,
+        "FECHA_DESDE": None,
+        "FECHA_HASTA": None
     }
-    for param_name in request.query_params.keys():
-        if param_name.strip().upper() not in CAMPOS_PERMITIDOS:
+
+    # Validamos y recolectamos los query params recibidos de forma case-insensitive
+    for param_name, param_value in request.query_params.items():
+        param_norm = param_name.strip().upper()
+        if param_norm not in filtros_raw:
             raise APIValidationError(
                 f"El campo de consulta '{param_name}' no está permitido. "
-                f"Campos válidos: {', '.join(sorted(CAMPOS_PERMITIDOS))}"
+                f"Campos válidos: {', '.join(sorted(filtros_raw.keys()))}"
             )
-
-    # Recolectamos los parametros en un dict
-    filtros_raw = {
-        "GENERO": genero,
-        "EDAD": edad,
-        "CANAL": canal,
-        "CODIGO_PRODUCTO": codigo_producto,
-        "ID_PERSONA": id_persona,
-        "LOCAL": local,
-        "FECHA_DESDE": fecha_desde,
-        "FECHA_HASTA": fecha_hasta
-    }
+        filtros_raw[param_norm] = param_value
 
     # Descartamos los None
     filtros_raw = {k: v for k, v in filtros_raw.items() if v is not None}
