@@ -122,7 +122,10 @@ def validar_y_mapear_filtros(filtros_raw: Dict[str, Any]) -> Dict[str, Any]:
             # Rechazamos explícitamente valores float no enteros (ej: 31.7)
             # porque int(31.7) los trunca silenciosamente a 31 sin arrojar error,
             # lo que causaría comportamiento inconsistente entre GET y POST.
+            # También rechazamos booleanos (True/False) ya que bool es subclase de int.
             try:
+                if isinstance(value, bool):
+                    raise ValueError()
                 if isinstance(value, float) and not value.is_integer():
                     raise ValueError()
                 val_int = int(value)
@@ -136,8 +139,10 @@ def validar_y_mapear_filtros(filtros_raw: Dict[str, Any]) -> Dict[str, Any]:
 
         elif campo_norm == "LOCAL":
             # LOCAL debe ser un número entero estrictamente positivo (mayor a 0).
-            # Rechazamos floats no enteros para consistencia entre GET y POST.
+            # Rechazamos floats no enteros y booleanos para consistencia.
             try:
+                if isinstance(value, bool):
+                    raise ValueError()
                 if isinstance(value, float) and not value.is_integer():
                     raise ValueError()
                 val_int = int(value)
@@ -151,8 +156,10 @@ def validar_y_mapear_filtros(filtros_raw: Dict[str, Any]) -> Dict[str, Any]:
 
         elif campo_norm == "CODIGO_PRODUCTO":
             # CODIGO_PRODUCTO (SKU) debe ser un número entero estrictamente positivo (mayor a 0).
-            # Rechazamos floats no enteros para consistencia entre GET y POST.
+            # Rechazamos floats no enteros y booleanos para consistencia.
             try:
+                if isinstance(value, bool):
+                    raise ValueError()
                 if isinstance(value, float) and not value.is_integer():
                     raise ValueError()
                 val_int = int(value)

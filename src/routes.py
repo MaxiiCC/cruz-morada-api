@@ -42,7 +42,7 @@ router = APIRouter()
     summary="Obtener resumen estadístico vía GET",
     description="Devuelve estadísticas de ventas calculadas sobre MONTO APLICADO con base en filtros opcionales pasados como parámetros de consulta (query params)."
 )
-async def get_estadisticas(
+def get_estadisticas(
     request: Request,
     # Cada parámetro a continuación corresponde a un filtro opcional que el usuario
     # puede incluir en la URL. Todos son opcionales (Optional[str] con valor None por defecto).
@@ -127,7 +127,7 @@ async def get_estadisticas(
     summary="Obtener resumen estadístico vía POST",
     description="Devuelve estadísticas de ventas calculadas sobre MONTO APLICADO con base en un listado de filtros dinámicos incluidos en el cuerpo de la petición (JSON)."
 )
-async def post_estadisticas(request: Request, payload: ConsultaRequest):
+def post_estadisticas(request: Request, payload: ConsultaRequest):
     """
     Endpoint POST: recibe los filtros dentro del body JSON de la petición.
 
