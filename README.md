@@ -12,18 +12,20 @@ El servicio incluye carga de datos desatendida al inicio mediante procesamiento 
 cruz-morada-api/
 ├── src/
 │   ├── __init__.py
-│   ├── main.py          # Inicialización, lifespans, middleware y manejadores de errores
-│   ├── config.py        # Constantes, configuraciones de variables de entorno y mapeos
-│   ├── carga.py         # Carga paralela y preprocesamiento de datos por chunks
-│   ├── estadisticas.py  # Fórmulas de cálculo estadístico (mediana par, std poblacional, etc.)
-│   ├── filtros.py       # Aplicación de filtros lógicos AND al DataFrame en memoria
-│   ├── routes.py       # Definición de endpoints GET y POST con sus controladores
-│   ├── validaciones.py  # Reglas de validación de campos y control de tipos
-│   └── modelos.py       # Esquemas de datos Pydantic para entrada/salida y documentación
+│   ├── main.py          # Inicialización, lifespans, manejadores de errores y CORS
+│   ├── config.py        # Constantes, mapeos de género y canales permitidos
+│   ├── carga.py         # Carga paralela y preprocesamiento tolerante a fallas
+│   ├── estadisticas.py  # Fórmulas descriptivas (mediana manual y std ddof=0)
+│   ├── filtros.py       # Aplicación de filtros booleanos y fix de fecha
+│   ├── routes.py        # Controladores GET y POST e insensibilidad a mayúsculas
+│   ├── validaciones.py  # Validación estricta de tipos de datos y whitelists
+│   └── modelos.py       # Esquemas Pydantic y estructura de ErrorResponse
 ├── tests/
-│   └── test_api.py      # Pruebas unitarias de endpoints y validadores
-├── datos.json             # Casos de prueba y payloads de ejemplo exigidos
-├── data/                # Carpeta para colocar ventas_completas.csv
+│   └── test_api.py      # Pruebas unitarias automáticas (Pytest)
+├── documentacion/
+│   └── bitacora.md      # Notas de desarrollo y benchmarks de rendimiento
+├── datos.json           # Payloads y respuestas de prueba esperadas
+├── data/                # Carpeta contenedora del CSV de transacciones
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
@@ -103,11 +105,20 @@ Al iniciar, el servidor ejecutará la carga paralela desatendida del CSV. Verás
 
 ---
 
-## Documentación Interactiva (Swagger)
+## Documentación y Bitácora de Desarrollo
 
-Una vez iniciado el servidor, puedes acceder a la documentación interactiva autogenerada:
-- **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+* **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs) (especificaciones detalladas y pruebas interactivas de endpoints).
+* **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc) (documentación alternativa limpia).
+* **Bitácora del Desarrollador:** Consulta [documentacion/bitacora.md](documentacion/bitacora.md) para revisar las notas técnicas de desarrollo, decisiones de arquitectura y resultados de benchmarks.
+
+---
+
+## Supuestos de Validación y Reglas de Negocio
+Para asegurar la consistencia en el comportamiento de la API y robustecer el control de errores, se definieron los siguientes criterios lógicos:
+* **Rango de Edad (`EDAD`):** Se valida estrictamente que sea un valor entero entre `0` y `120` años inclusive para evitar datos inconsistentes.
+* **Identificadores numéricos (`LOCAL` y `CODIGO_PRODUCTO`):** Deben ser valores enteros estrictamente positivos (`> 0`). El valor `0` o negativos se rechazan de inmediato con HTTP 400.
+* **Huso Horario de Fechas (`FECHA_DESDE` / `FECHA_HASTA`):** En concordancia con el enunciado, la API normaliza todas las marcas de tiempo tz-aware al huso horario fijo **UTC-4** de Cruz Morada antes de realizar comparaciones lógicas, garantizando consistencia en las búsquedas.
+* **Identificación de Personas (`ID_PERSONA`):** La API valida que sea una cadena no vacía para asegurar resiliencia en caso de que los scripts de prueba utilicen IDs genéricos que no sean UUID estándar.
 
 ---
 
@@ -156,7 +167,7 @@ Para ejecutar la suite de 22 pruebas unitarias automatizadas sobre los controlad
 
 **En Linux / macOS:**
 ```bash
-pytest -v
+python3 -m pytest -v
 ```
 
 **En Windows (PowerShell):**
